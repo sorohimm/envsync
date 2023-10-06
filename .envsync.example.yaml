@@ -1,0 +1,4 @@
+#replaces values in final env file
+replace:
+  FOO: 127.0.0.1:8080
+  BAR: localhost:5555
