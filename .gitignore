@@ -1,1 +1,7 @@
 /secrets.json
+/.idea/*
+/_sandbox/*
+/build/
+.DS_Store
+.env.*
+/.envsync.yaml

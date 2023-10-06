@@ -1,4 +1,4 @@
-module sorohimm/envsync
+module github.com/sorohimm/envsync
 
 go 1.20
 

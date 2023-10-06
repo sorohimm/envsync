@@ -25,7 +25,8 @@ func New(params interface{}) error {
 }
 
 type Params struct {
-	Secrets    string `short:"s" long:"secrets" description:"Path to secrets json"`
-	DeployPath string `short:"d" long:"deploy" description:"Path to deployment file"`
-	OutputPath string `short:"o" long:"output" default:"./.env" description:"Path to output env file"`
+	Secrets    string `short:"s" long:"secrets" description:"path to secrets json"`
+	DeployPath string `short:"d" long:"deploy" description:"path to deployment file"`
+	OutputPath string `short:"o" long:"output" default:"./.env" description:"path to output env file"`
+	ConfigPath string `short:"c" long:"config" default:"./.envsync.yaml" description:"path to config file"`
 }

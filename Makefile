@@ -8,6 +8,11 @@ OUT_DIR := ./builds
 
 ENVSYNC_APP := "envsync"
 
+default: all
+
+.PHONY: all
+all:build
+
 .PHONY: build
 build: ENVSYNC_OUT := $(OUT_DIR)/$(ENVSYNC_APP)
 build: ENVSYNC_MAIN := ./cmd

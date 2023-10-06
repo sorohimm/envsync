@@ -1,6 +1,6 @@
 package main
 
-import "sorohimm/envsync/internal"
+import "github.com/sorohimm/envsync/internal"
 
 func main() {
 	internal.NewRunner().Run()

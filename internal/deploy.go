@@ -2,9 +2,10 @@ package internal
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"os"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 type Env map[string]string
@@ -20,6 +21,7 @@ type Vault struct {
 
 type Service map[string]Env
 
+// loadDeployEnv reads a deploy file from the specified path.
 func loadDeployEnv(path string) (*Deploy, error) {
 	deployFileRaw, err := os.ReadFile(path)
 	if err != nil {

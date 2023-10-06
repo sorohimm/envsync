@@ -4,10 +4,13 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"sorohimm/envsync/internal/params"
 	"sort"
 	"strings"
+
+	"github.com/sorohimm/envsync/internal/params"
 )
+
+type Envs []string
 
 func NewRunner() *Runner {
 	return &Runner{}
@@ -23,54 +26,84 @@ func (o *Runner) Run() {
 }
 
 func (o *Runner) run(p *params.Params) {
+	cfg, err := loadConfig(p.ConfigPath)
+	if err != nil {
+		fmt.Println("Warning: config is not loaded!")
+	}
+
 	deploy, err := loadDeployEnv(p.DeployPath)
 	if err != nil {
 		fmt.Println(err)
+
 		return
 	}
 
 	secrets, err := loadSecrets(p.Secrets)
 	if err != nil {
 		fmt.Println(err)
+
 		return
 	}
 
-	writeEnv(deploy, secrets, p.OutputPath)
+	envs := makeEnvs(deploy, secrets, cfg.Replace)
+
+	err = writeEnv(envs, p.OutputPath)
+	if err != nil {
+		fmt.Println(err)
+
+		return
+	}
+
+	fmt.Println("Done.")
 }
 
-func writeEnv(deploy *Deploy, secrets Secrets, outputPath string) {
+func writeEnv(envs Envs, outputPath string) error {
 	file, err := os.Create(outputPath)
 	if err != nil {
-		fmt.Printf("Create file error: %v\n", err)
-		return
+		return fmt.Errorf("create file error: %w", err)
 	}
 	defer file.Close()
-
-	var envs []string
-
-	for envKey, envVal := range deploy.Env {
-		line := envKey + "=" + envVal
-		envs = append(envs, line)
-	}
-
-	for _, services := range deploy.Vault.Services {
-		for _, serviceEnvs := range services {
-			for dplSecretKey, dplSecretVal := range serviceEnvs {
-				if secretVal, ok := secrets[dplSecretVal]; ok {
-					line := dplSecretKey + "=" + secretVal
-					envs = append(envs, line)
-				}
-			}
-		}
-	}
-
-	sort.Strings(envs)
 
 	writer := bufio.NewWriter(file)
 	defer writer.Flush()
 
 	_, err = writer.WriteString(strings.Join(envs, "\n"))
 	if err != nil {
-		fmt.Printf("Write env error: %s", err)
+		return fmt.Errorf("write env error: %w", err)
 	}
+
+	return nil
+}
+
+func makeEnvs(deploy *Deploy, secrets Secrets, replace Replace) []string {
+	var envsRaw = make(map[string]string)
+
+	for envKey, envVal := range deploy.Env {
+		envsRaw[envKey] = envVal
+	}
+
+	for _, services := range deploy.Vault.Services {
+		for _, serviceEnvs := range services {
+			for dplSecretKey, dplSecretVal := range serviceEnvs {
+				if secretVal, ok := secrets[dplSecretVal]; ok {
+					envsRaw[dplSecretKey] = secretVal
+				}
+			}
+		}
+	}
+
+	if len(replace) != 0 {
+		for replaceKey, replaceVal := range replace {
+			envsRaw[replaceKey] = replaceVal
+		}
+	}
+
+	var envs []string
+	for k, v := range envsRaw {
+		envs = append(envs, k+"="+v)
+	}
+
+	sort.Strings(envs)
+
+	return envs
 }
